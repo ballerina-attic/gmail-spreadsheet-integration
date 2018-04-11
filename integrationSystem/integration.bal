@@ -16,7 +16,7 @@
 
 import ballerina/log;
 
-function main(string[] args) {
+public function main(string[] args) {
     //Retrieve the user details from spreadsheet
     log:printInfo("Started to retrieve customer details from spreadsheet id:" + spreadsheetId + " ;spreasheet name: "
             + sheetName);

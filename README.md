@@ -113,24 +113,24 @@ Let's see how both of these Ballerina connectors can be used for this sample use
 First let's look at how to create the googlespreadsheet client endpoint as follows.
 ```ballerina
 endpoint gsheets:Client spreadsheetEP {
-    oAuth2ClientConfig: {
+    clientConfig: {
         accessToken:accessToken,
-        clientConfig:{},
         refreshToken:refreshToken,
         clientId:clientId,
-        clientSecret:clientSecret,
-        useUriParams:true
+        clientSecret:clientSecret
     }
 };
 ```
 Next, let's look at how to create the gMail client endpoint as follows.
 ```ballerina
-endpoint gmail:Client gMailEP {
-    oAuth2ClientConfig:{
-        accessToken:accessToken,
-        clientId:clientId,
-        clientSecret:clientSecret,
-        refreshToken:refreshToken
+endpoint Client gMailEP {
+    clientConfig:{
+        auth:{
+            accessToken:accessToken,
+            clientId:clientId,
+            clientSecret:clientSecret,
+            refreshToken:refreshToken
+        }
     }
 };
 ```

@@ -28,7 +28,7 @@ customer’s mailbox saying,
 The product name is added to the first column and customer name and email address are added to the second and third 
 columns of a Google Sheet.
 
-![GMail-Spreadsheet Integration Overview](gmail_spreadsheet_integration.svg)
+![GMail-Spreadsheet Integration Overview](images/gmail_spreadsheet_integration.svg)
 
 You can use the Ballerina Google Spreadsheet connector to read the spreadsheet, iterate through the rows and pick 
 up the product name, email address and name of each customer from the columns. Then you can use the GMail connector 
@@ -68,7 +68,7 @@ to simply add the name to the body of a standard-html-mail template and send the
 - Create a google sheet as following from the same google account you have obtained the client credentials and tokens 
 to access both apis.
 
-![Sample googlsheet created to keep trach of product downloads by customers](spreadsheet.png)
+![Sample googlsheet created to keep trach of product downloads by customers](images/spreadsheet.png)
 
 - Obtain the spreadsheet id by extracting the value between the "/d/" and the "/edit" in the URL of your spreadsheet.
 

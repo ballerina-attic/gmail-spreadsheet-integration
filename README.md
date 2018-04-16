@@ -28,6 +28,8 @@ customer’s mailbox saying,
 The product name is added to the first column and customer name and email address are added to the second and third 
 columns of a Google Sheet.
 
+![GMail-Spreadsheet Integration Overview](gmail_spreadsheet_integration.svg)
+
 You can use the Ballerina Google Spreadsheet connector to read the spreadsheet, iterate through the rows and pick 
 up the product name, email address and name of each customer from the columns. Then you can use the GMail connector 
 to simply add the name to the body of a standard-html-mail template and send the email to the relevant customer.
@@ -114,10 +116,12 @@ First let's look at how to create the googlespreadsheet client endpoint as follo
 ```ballerina
 endpoint gsheets:Client spreadsheetEP {
     clientConfig: {
-        accessToken:accessToken,
-        refreshToken:refreshToken,
-        clientId:clientId,
-        clientSecret:clientSecret
+        auth:{
+            accessToken:accessToken,
+            refreshToken:refreshToken,
+            clientId:clientId,
+            clientSecret:clientSecret
+        }
     }
 };
 ```
@@ -193,7 +197,7 @@ successful message send request.
 The main function in notification_sender.bal calls **sendNotification()**. Inside **sendNotification()**, the customer 
 details are taken from the sheet by first calling **getCustomerDetailsFromGSheet()**. Then, the rows in the returned 
 sheet are iterated. During each iteration, cell values in the first three columns are extracted for each row, except for 
-the first row with column headers and during each iteration, a custom html mail is created and sent for each customer.
+the first row with column headers, and during each iteration, a custom html mail is created and sent for each customer.
 
 ```ballerina
 function sendNotification() {

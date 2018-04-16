@@ -16,7 +16,7 @@
 
 import ballerina/config;
 import ballerina/log;
-import wso2/gsheets;
+import wso2/gsheets4;
 import wso2/gmail;
 
 documentation{A valid access token with gmail and google sheets access.}
@@ -46,7 +46,7 @@ string userId = config:getAsString("USER_ID");
 documentation{
     Google Sheets client endpoint declaration with http client configurations.
 }
-endpoint gsheets:Client spreadsheetClient {
+endpoint gsheets4:Client spreadsheetClient {
     clientConfig:{
         auth:{
             accessToken:accessToken,
@@ -72,7 +72,7 @@ endpoint gmail:Client gmailClient {
 };
 
 public function main(string[] args) {
-    sendNotification();
+  sendNotification();
 }
 
 documentation{
@@ -90,7 +90,7 @@ function sendNotification() {
             string CutomerName = value[1];
             string customerEmail = value[2];
             string subject = "Thank You for Downloading " + productName;
-            sendMail(customerEmail, subject, getCustomEmailTamplate(CutomerName, productName));
+            sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
         }
         i = i +1;
     }
@@ -116,7 +116,7 @@ documentation{
     P{{productName}} - Name of the product which the customer has downloaded.
     R{{}} - String customized email message.
 }
-function getCustomEmailTamplate(string customerName, string productName) returns (string){
+function getCustomEmailTemplate(string customerName, string productName) returns (string){
     string emailTemplate = "<h2> Hi "+ customerName +" </h2>";
     emailTemplate = emailTemplate + "<h3> Thank you for downloading the product " + productName + " ! </h3>";
     emailTemplate = emailTemplate + "<p> If you still have questions regarding "+ productName + ", please contact us and we" +

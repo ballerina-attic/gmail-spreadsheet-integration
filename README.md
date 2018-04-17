@@ -1,7 +1,7 @@
 # Reading Google Sheet and Messaging with GMail
 
-Google Sheet is an online spreadsheet that lets users create and format spreadsheets and simultaneously work with other 
-people. Gmail is a free, Web-based e-mail service provided by Google.
+Google Sheets is an online spreadsheet that lets users to create and format spreadsheets and simultaneously work with other 
+people. Gmail is a free, web-based e-mail service provided by Google.
 
 > This guide walks you through the process of using Google Sheets and GMail using Ballerina language.
 
@@ -14,7 +14,7 @@ The following are the sections available in this guide.
 
 ## <a name="what-you-build"></a>  What you’ll build
 
-To understand how you can use Ballerina API Connectors, in this sample we use GMail connector and Google Spreadsheet 
+To understand how you can use Ballerina API connectors, in this sample we use _GMail connector_ and _Google Spreadsheet_ 
 connector. Let us consider a real world use case scenario of a software product company. When a customer downloads the 
 product from the company website, providing the name and email address, the company sends a customized email to the 
 customer’s mailbox saying,
@@ -25,14 +25,13 @@ customer’s mailbox saying,
 
     If you still have questions regarding <ProductName>, please contact us and we will get in touch with you right away !                                        
 
-The product name is added to the first column and customer name and email address are added to the second and third 
-columns of a Google Sheet.
+The product name, customer name and email address are added to the first, second and third columns of a Google Sheet.
 
 ![GMail-Spreadsheet Integration Overview](images/gmail_spreadsheet_integration.svg)
 
 You can use the Ballerina Google Spreadsheet connector to read the spreadsheet, iterate through the rows and pick 
 up the product name, email address and name of each customer from the columns. Then you can use the GMail connector 
-to simply add the name to the body of a standard-html-mail template and send the email to the relevant customer.
+to simply add the name to the body of a html mail template and send the email to the relevant customer.
 
 ## <a name="pre-req"></a> Prerequisites
  
@@ -65,8 +64,8 @@ to simply add the name to the body of a standard-html-mail template and send the
             * https://mail.google.com
             * https://spreadsheets.google.com/feeds/
             
-- Create a google sheet as following from the same google account you have obtained the client credentials and tokens 
-to access both apis.
+- Create a Google Sheet as following from the same Google account you have obtained the client credentials and tokens 
+to access both APIs.
 
 ![Sample googlsheet created to keep trach of product downloads by customers](images/spreadsheet.png)
 
@@ -104,7 +103,7 @@ SENDER="enter email sender address"
 USER_ID="enter the user id. give special value 'me' for the authorized user"
 ```
 - SPREADSHEET_ID is the spreadsheet id you have extracted from the sheet url.
-- SHEET_NAME is the sheet name of your google sheet. For example in above example, SHEET_NAME="Stats"
+- SHEET_NAME is the sheet name of your Goolgle Sheet. For example in above example, SHEET_NAME="Stats"
 - SENDER is the email address of the sender.
 - USER_ID is the email address of the authorized user. You can give this value as **me**.
 
@@ -112,7 +111,7 @@ USER_ID="enter the user id. give special value 'me' for the authorized user"
 
 Let's see how both of these Ballerina connectors can be used for this sample use case. 
 
-First let's look at how to create the googlespreadsheet client endpoint as follows.
+First let's look at how to create the _googlespreadsheet client endpoint_ as follows.
 ```ballerina
 endpoint gsheets4:Client spreadsheetEP {
     clientConfig: {
@@ -138,9 +137,9 @@ endpoint Client gMailEP {
     }
 };
 ```
-Note that, in the implementation, each of the above endpoint configuration parameters are read from the ballerina.conf file.
+Note that, in the implementation, each of the above endpoint configuration parameters are read from the `ballerina.conf` file.
 
-After creating the endpoints, let's implement the api calls inside the functions **getCustomerDetailsFromGSheet()** 
+After creating the endpoints, let's implement the API calls inside the functions **getCustomerDetailsFromGSheet()** 
 and **sendMail()**.
 
 Let's look at how to get the sheet data about customer product downloads as follows.
@@ -194,7 +193,7 @@ Next, the GMail connector's **sendMessage()** function is called from the gMail 
 (default:me) and the created Message type object. The sent message id and thread id are returned in the response for a 
 successful message send request. 
 
-The main function in notification_sender.bal calls **sendNotification()**. Inside **sendNotification()**, the customer 
+The main function in _notification_sender.bal_ calls **sendNotification()**. Inside **sendNotification()**, the customer 
 details are taken from the sheet by first calling **getCustomerDetailsFromGSheet()**. Then, the rows in the returned 
 sheet are iterated. During each iteration, cell values in the first three columns are extracted for each row, except for 
 the first row with column headers, and during each iteration, a custom html mail is created and sent for each customer.
@@ -218,7 +217,6 @@ function sendNotification() {
     }
 }
 ```
-To see the complete implementation refer integrationSystem package.
 
 ## <a name="testing"></a> Testing 
 
@@ -232,7 +230,7 @@ Run this sample by entering the following command in a terminal,
 
 #### <a name="response"></a> Response you'll get
 
-Each of the customers in your google sheet, would receive a new customized email with the 
+Each of the customers in your Google Sheet, would receive a new customized email with the 
 **Subject : Thank You for Downloading {ProductName}**
 
 Let's now look at sample log statements we will get when running the sample for this scenario.

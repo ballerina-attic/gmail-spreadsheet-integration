@@ -1,4 +1,4 @@
-# Reading Google Sheet and Messaging with GMail
+# Google Sheets GMail Integration
 
 Google Sheets is an online spreadsheet that lets users to create and format spreadsheets and simultaneously work with other 
 people. Gmail is a free, web-based e-mail service provided by Google.
@@ -193,7 +193,7 @@ Next, the GMail connector's **sendMessage()** function is called from the gMail 
 (default:me) and the created Message type object. The sent message id and thread id are returned in the response for a 
 successful message send request. 
 
-The main function in _notification_sender.bal_ calls **sendNotification()**. Inside **sendNotification()**, the customer 
+The main function in `notification_sender.bal` calls **sendNotification()**. Inside **sendNotification()**, the customer 
 details are taken from the sheet by first calling **getCustomerDetailsFromGSheet()**. Then, the rows in the returned 
 sheet are iterated. During each iteration, cell values in the first three columns are extracted for each row, except for 
 the first row with column headers, and during each iteration, a custom html mail is created and sent for each customer.

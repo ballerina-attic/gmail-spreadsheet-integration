@@ -114,7 +114,7 @@ Let's see how both of these Ballerina connectors can be used for this sample use
 
 First let's look at how to create the googlespreadsheet client endpoint as follows.
 ```ballerina
-endpoint gsheets:Client spreadsheetEP {
+endpoint gsheets4:Client spreadsheetEP {
     clientConfig: {
         auth:{
             accessToken:accessToken,
@@ -151,7 +151,7 @@ function getCustomerDetailsFromGSheet () returns (string[][]) {
     var spreadsheetRes = spreadsheetEP -> getSheetValues(spreadsheetId, sheetName, "", "");
     match spreadsheetRes {
         string[][] vals => values = vals;
-        gsheets:SpreadsheetError e => log:printInfo(e.errorMessage);
+        gsheets4:SpreadsheetError e => log:printInfo(e.errorMessage);
     }
     return values;
 }

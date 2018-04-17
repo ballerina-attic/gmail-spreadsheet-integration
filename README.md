@@ -1,9 +1,9 @@
-# Google Sheets GMail Integration
+# Google Sheets Gmail Integration
 
 Google Sheets is an online spreadsheet that lets users to create and format spreadsheets and simultaneously work with other 
 people. Gmail is a free, web-based e-mail service provided by Google.
 
-> This guide walks you through the process of using Google Sheets and GMail using Ballerina language.
+> This guide walks you through the process of using Google Sheets and Gmail using Ballerina language.
 
 The following are the sections available in this guide.
 

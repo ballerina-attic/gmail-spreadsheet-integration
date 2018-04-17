@@ -81,7 +81,7 @@ allows you to have any package structure, we'll stick with the following simple 
 ```
 gmail-spreadsheet-integration
   ├── ballerina.conf  
-  └── integrationSystem
+  └── notification-sender
       └── notification_sender.bal
 ```
 

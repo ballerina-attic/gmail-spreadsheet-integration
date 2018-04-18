@@ -1,4 +1,4 @@
-# Google Sheets Gmail Integration
+# Google Sheets-Gmail Integration
 
 Google Sheets is an online spreadsheet that lets users to create and format spreadsheets and simultaneously work with other 
 people. Gmail is a free, web-based e-mail service provided by Google.
@@ -11,11 +11,12 @@ The following are the sections available in this guide.
 - [Prerequisites](#pre-req)
 - [Developing the application](#develop-app)
 - [Testing](#testing)
+- [Deployment](#deployment)
 
 ## <a name="what-you-build"></a>  What you’ll build
 
-To understand how you can use Ballerina API connectors, in this sample we use _GMail connector_ and _Google Spreadsheet_ 
-connector. Let us consider a real world use case scenario of a software product company. When a customer downloads the 
+To understand how you can use Ballerina API connectors, in this sample we use _GMail connector_ and _Google Spreadsheet
+connector_. Let us consider a real world use case scenario of a software product company. When a customer downloads the 
 product from the company website, providing the name and email address, the company sends a customized email to the 
 customer’s mailbox saying,
 
@@ -30,7 +31,7 @@ The product name, customer name and email address are added to the first, second
 ![GMail-Spreadsheet Integration Overview](images/gmail_spreadsheet_integration.svg)
 
 You can use the Ballerina Google Spreadsheet connector to read the spreadsheet, iterate through the rows and pick 
-up the product name, email address and name of each customer from the columns. Then you can use the GMail connector 
+up the product name, email address and name of each customer from the columns. Then, you can use the GMail connector 
 to simply add the name to the body of a html mail template and send the email to the relevant customer.
 
 ## <a name="pre-req"></a> Prerequisites
@@ -42,7 +43,7 @@ to simply add the name to the body of a html mail template and send the email to
 - A Text Editor or an IDE
     - Optional requirement : Ballerina IDE plugins (IntelliJ IDEA, VSCode, Atom)
     
-- Obtain following tokens and credentials for both Google Sheets and GMail APIs. 
+- Obtain following tokens and credentials for both Google Sheets and Gmail APIs. 
     * Client Id
     * Client Secret
     * Access Token
@@ -71,7 +72,6 @@ to access both APIs.
 
 - Obtain the spreadsheet id by extracting the value between the "/d/" and the "/edit" in the URL of your spreadsheet.
 
-## <a name="develop-app"></a> Developing the application
 ### <a name="before-begin"></a> Before you begin
 ##### Understand the package structure
 
@@ -107,7 +107,7 @@ USER_ID="enter the user id. give special value 'me' for the authorized user"
 - SENDER is the email address of the sender.
 - USER_ID is the email address of the authorized user. You can give this value as **me**.
 
-### <a name="Implementation"></a> Implementation
+## <a name="develop-prog"></a> Developing the Program
 
 Let's see how both of these Ballerina connectors can be used for this sample use case. 
 
@@ -124,7 +124,7 @@ endpoint gsheets4:Client spreadsheetEP {
     }
 };
 ```
-Next, let's look at how to create the gMail client endpoint as follows.
+Next, let's look at how to create the _gMail client endpoint_ as follows.
 ```ballerina
 endpoint Client gMailEP {
     clientConfig:{
@@ -158,7 +158,7 @@ function getCustomerDetailsFromGSheet () returns (string[][]) {
 The spreadsheet connector's **getSheetValues()** function is called from spreadsheet endpoint by passing only the 
 spreadsheet id and the sheet name. The sheet values are returned as a two dimensional string array.
 
-Next, let's look at how to send an email using the GMail connector endpoint.
+Next, let's look at how to send an email using the GMail client endpoint.
 ```ballerina
 function sendMail(string customerEmail, string subject, string messageBody) {
     //Create html message
@@ -225,13 +225,21 @@ function sendNotification() {
 Run this sample by entering the following command in a terminal,
 
 ```bash
-<SAMPLE_ROOT_DIRECTORY>/src$ ballerina run integrationSystem
+<SAMPLE_ROOT_DIRECTORY>$ ballerina run notification-sender
 ```
 
 #### <a name="response"></a> Response you'll get
 
 Each of the customers in your Google Sheet, would receive a new customized email with the 
-**Subject : Thank You for Downloading {ProductName}**
+**Subject : Thank You for Downloading {ProductName}**.
+
+A sample email body will look as follows.
+
+    Hi Peter 
+    
+    Thank you for downloading the product ESB !
+
+    If you still have questions regarding ESB, please contact us and we will get in touch with you right away !
 
 Let's now look at sample log statements we will get when running the sample for this scenario.
 
@@ -240,4 +248,22 @@ INFO  [integrationSystem] - Retrieved customer details from spreadsheet id:1AH8-
 INFO  [integrationSystem] - Sent email to tom@mail.com with message Id: 162b8e298adac15c and thread Id:162b8e298adac15c 
 INFO  [integrationSystem] - Sent email to jack@mail.com with message Id: 162b8e29ac7da1da and thread Id:162b8e29ac7da1da 
 INFO  [integrationSystem] - Sent email to peter@mail.com with message Id: 162b8e29edd1e593 and thread Id:162b8e29edd1e593 
+```
+## <a name="deployment"></a>  Deployment
+
+#### Deploying locally
+You can deploy the services that you developed above in your local environment. You can create the Ballerina executable archives (.balx) first and run them in your local environment as follows.
+
+Building
+
+```
+<SAMPLE_ROOT_DIRECTORY>$ ballerina build gmail-spreadsheet-integration/
+```
+
+After build is successful, there will be a .balx file inside the target directory. That executable can be executed as follows.
+
+Running
+
+```
+<SAMPLE_ROOT_DIRECTORY>$ ballerina run <Exec_Archive_File_Name>
 ```

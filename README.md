@@ -1,4 +1,4 @@
-# Google Sheets-Gmail Integration
+# Gmail-Google Sheets Integration
 
 Google Sheets is an online spreadsheet that lets users to create and format spreadsheets and simultaneously work with other 
 people. Gmail is a free, web-based e-mail service provided by Google.
@@ -9,7 +9,7 @@ The following are the sections available in this guide.
 
 - [What you'll build](#what-you-build)
 - [Prerequisites](#pre-req)
-- [Developing the application](#develop-app)
+- [Developing the application](#develop-prog)
 - [Testing](#testing)
 - [Deployment](#deployment)
 
@@ -249,6 +249,24 @@ INFO  [integrationSystem] - Sent email to tom@mail.com with message Id: 162b8e29
 INFO  [integrationSystem] - Sent email to jack@mail.com with message Id: 162b8e29ac7da1da and thread Id:162b8e29ac7da1da 
 INFO  [integrationSystem] - Sent email to peter@mail.com with message Id: 162b8e29edd1e593 and thread Id:162b8e29edd1e593 
 ```
+### <a name="unit-tests"></a> Writing unit tests    
+
+In Ballerina, the unit test cases should be in the same package and the naming convention should be as follows.
+* Test files should contain _test.bal suffix.
+* Test functions should contain test prefix.
+  * e.g., testSendNotification()
+
+This guide contains the unit test case for the `sendNotification()` function from 
+the `notification_sender.bal`. 
+
+To run the unit test, go to the sample root directory and run the following command.
+```bash
+   <SAMPLE_ROOT_DIRECTORY>$ ballerina test notification-sender/
+```
+   
+Refer to the `notification-sender/tests/notification_sender_test.bal` for the implementation of the test file.
+
+
 ## <a name="deployment"></a>  Deployment
 
 #### Deploying locally

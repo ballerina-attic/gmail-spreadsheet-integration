@@ -15,8 +15,10 @@ The following are the sections available in this guide.
 
 ## <a name="what-you-build"></a>  What you’ll build
 
-To understand how you can use Ballerina API connectors, in this sample we use _GMail connector_ and _Google Spreadsheet
-connector_. Let us consider a real world use case scenario of a software product company. When a customer downloads the 
+To understand how you can use Ballerina API connectors, in this sample we use _Google Spreadsheet connector_ to get 
+data from a Google Sheet and send those data in an email using _GMail connector_. 
+
+Let us consider a real world use case scenario of a software product company. When a customer downloads the 
 product from the company website, providing the name and email address, the company sends a customized email to the 
 customer’s mailbox saying,
 

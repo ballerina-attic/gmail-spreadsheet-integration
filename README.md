@@ -15,8 +15,8 @@ The following are the sections available in this guide.
 
 ## <a name="what-you-build"></a>  What you’ll build
 
-To understand how you can use Ballerina API connectors, in this sample we use _Google Spreadsheet connector_ to get 
-data from a Google Sheet and send those data in an email using _GMail connector_. 
+To understand how you can use Ballerina API connectors, in this sample we use Google Spreadsheet connector to get 
+data from a Google Sheet and send those data in an email using Gmail connector. 
 
 Let us consider a real world use case scenario of a software product company. When a customer downloads the 
 product from the company website, providing the name and email address, the company sends a customized email to the 
@@ -30,10 +30,10 @@ customer’s mailbox saying,
 
 The product name, customer name and email address are added to the first, second and third columns of a Google Sheet.
 
-![GMail-Spreadsheet Integration Overview](images/gmail_spreadsheet_integration.svg)
+![Gmail-Spreadsheet Integration Overview](images/gmail_spreadsheet_integration.svg)
 
 You can use the Ballerina Google Spreadsheet connector to read the spreadsheet, iterate through the rows and pick 
-up the product name, email address and name of each customer from the columns. Then, you can use the GMail connector 
+up the product name, email address and name of each customer from the columns. Then, you can use the Gmail connector 
 to simply add the name to the body of a html mail template and send the email to the relevant customer.
 
 ## <a name="pre-req"></a> Prerequisites
@@ -113,7 +113,7 @@ USER_ID="enter the user id. give special value 'me' for the authorized user"
 
 Let's see how both of these Ballerina connectors can be used for this sample use case. 
 
-First let's look at how to create the _googlespreadsheet client endpoint_ as follows.
+First let's look at how to create the Google Sheets client endpoint as follows.
 ```ballerina
 endpoint gsheets4:Client spreadsheetEP {
     clientConfig: {
@@ -126,9 +126,9 @@ endpoint gsheets4:Client spreadsheetEP {
     }
 };
 ```
-Next, let's look at how to create the _gMail client endpoint_ as follows.
+Next, let's look at how to create the Gmail client endpoint as follows.
 ```ballerina
-endpoint Client gMailEP {
+endpoint Client gmailEP {
     clientConfig:{
         auth:{
             accessToken:accessToken,
@@ -141,8 +141,8 @@ endpoint Client gMailEP {
 ```
 Note that, in the implementation, each of the above endpoint configuration parameters are read from the `ballerina.conf` file.
 
-After creating the endpoints, let's implement the API calls inside the functions **getCustomerDetailsFromGSheet()** 
-and **sendMail()**.
+After creating the endpoints, let's implement the API calls inside the functions `getCustomerDetailsFromGSheet`.
+and `sendMail`.
 
 Let's look at how to get the sheet data about customer product downloads as follows.
 ```ballerina
@@ -157,48 +157,46 @@ function getCustomerDetailsFromGSheet () returns (string[][]) {
     return values;
 }
 ```
-The spreadsheet connector's **getSheetValues()** function is called from spreadsheet endpoint by passing only the 
-spreadsheet id and the sheet name. The sheet values are returned as a two dimensional string array.
+The spreadsheet connector's `getSheetValues` function is called from spreadsheet endpoint by passing only the 
+spreadsheet id and the sheet name. The sheet values are returned as a two dimensional string array if the request is
+successful. If unsuccessful, returns a `SpreadsheetError`.
 
-Next, let's look at how to send an email using the GMail client endpoint.
+Next, let's look at how to send an email using the Gmail client endpoint.
 ```ballerina
 function sendMail(string customerEmail, string subject, string messageBody) {
     //Create html message
-    gmail:MessageOptions options = {};
-    options.sender = senderEmail;
-    gmail:Message mail = new gmail:Message();
-    match mail.createHTMLMessage(customerEmail, subject, messageBody, options, []){
-        gmail:GMailError e => log:printInfo(e.errorMessage);
-        () => {
-            //Send mail
-            var sendMessageResponse = gMailEP -> sendMessage(userId, mail);
-            string messageId;
-            string threadId;
-            match sendMessageResponse {
-                (string, string) sendStatus => {
-                    (messageId, threadId) = sendStatus;
-                    log:printInfo("Sent email to " + customerEmail + "with message Id: " + messageId + " and thread Id:"
-                            + threadId);
-                }
-                gmail:GMailError e => log:printInfo(e.errorMessage);
-            }
+    gmail:MessageRequest messageRequest;
+    messageRequest.sender = senderEmail;
+    messageRequest.subject = subject;
+    messageRequest.messageBody = messageBody;
+    messageRequest.recipient = customerEmail;
+    messageRequest.contentType = gmail:TEXT_HTML;
+    //Send mail
+    var sendMessageResponse = gmailClient->sendMessage(userId, messageRequest);
+    string messageId;
+    string threadId;
+    match sendMessageResponse {
+        (string, string) sendStatus => {
+            (messageId, threadId) = sendStatus;
+            log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
+                    + threadId);
         }
+        gmail:GmailError e => log:printInfo(e.message);
     }
 }
 ```
-First, a new Message type object is created and its function **createHTMLMessage()** is called by passing the recipient 
-(customer email address), subject of the mail, html message body of the mail, mail options including from, cc, bcc 
-fields and an InlineImage type array.
-Since we are not using inline images in our mail, we have passed an empty array as the last argument.
+First, a new `MessageRequest` type is created and assigned the fields for sending an email. The content type of the 
+message request is set as `TEXT_HTML`. Then Gmail connector's `sendMessage` function is called from Gmail endpoint by
+passing the messageRequest and userId.
 
-Next, the GMail connector's **sendMessage()** function is called from the gMail endpoint by passing the user id 
-(default:me) and the created Message type object. The sent message id and thread id are returned in the response for a 
-successful message send request. 
+The response from `sendMessage` is either a string tuple with the message ID and thread ID 
+(if the message was sent successfully) or a `GmailError` (if the message was unsuccessful). The `match` operation can be 
+used to handle the response if an error occurs.    
 
-The main function in `notification_sender.bal` calls **sendNotification()**. Inside **sendNotification()**, the customer 
-details are taken from the sheet by first calling **getCustomerDetailsFromGSheet()**. Then, the rows in the returned 
+The main function in `notification_sender.bal` calls `sendNotification` function. Inside that, the customer 
+details are taken from the sheet by first calling `getCustomerDetailsFromGSheet`. Then, the rows in the returned 
 sheet are iterated. During each iteration, cell values in the first three columns are extracted for each row, except for 
-the first row with column headers, and during each iteration, a custom html mail is created and sent for each customer.
+the first row with column headers, and during each iteration, a custom HTML mail is created and sent for each customer.
 
 ```ballerina
 function sendNotification() {
@@ -215,7 +213,7 @@ function sendNotification() {
             string subject = "Thank You for Downloading " + productName;
             sendMail(customerEmail, subject, getCustomEmailTamplate(CutomerName, productName));
         }
-        i = i +1;
+        i += 1;
     }
 }
 ```
@@ -227,7 +225,7 @@ function sendNotification() {
 Run this sample by entering the following command in a terminal,
 
 ```bash
-<SAMPLE_ROOT_DIRECTORY>$ ballerina run notification-sender
+$ ballerina run notification-sender
 ```
 
 #### <a name="response"></a> Response you'll get
@@ -258,12 +256,11 @@ In Ballerina, the unit test cases should be in the same package and the naming c
 * Test functions should contain test prefix.
   * e.g., testSendNotification()
 
-This guide contains the unit test case for the `sendNotification()` function from 
-the `notification_sender.bal`. 
+This guide contains the unit test case for the `sendNotification` function.
 
 To run the unit test, go to the sample root directory and run the following command.
 ```bash
-   <SAMPLE_ROOT_DIRECTORY>$ ballerina test notification-sender/
+$ ballerina test notification-sender
 ```
    
 Refer to the `notification-sender/tests/notification_sender_test.bal` for the implementation of the test file.
@@ -276,14 +273,14 @@ You can deploy the services that you developed above in your local environment. 
 
 Building
 
-```
-<SAMPLE_ROOT_DIRECTORY>$ ballerina build gmail-spreadsheet-integration/
+```bash
+$ ballerina build gmail-spreadsheet-integration
 ```
 
 After build is successful, there will be a .balx file inside the target directory. That executable can be executed as follows.
 
 Running
 
-```
-<SAMPLE_ROOT_DIRECTORY>$ ballerina run <Exec_Archive_File_Name>
+```bash
+$ ballerina run <Exec_Archive_File_Name>
 ```

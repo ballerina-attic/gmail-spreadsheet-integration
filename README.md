@@ -9,8 +9,8 @@ e-mail service provided by Google.
 The following are the sections available in this guide.
 
 - [What you'll build](#what-youll-build)
-- [Prerequisites](#pre-req)
-- [Developing the application](#develop-prog)
+- [Prerequisites](#prerequisites)
+- [Developing the application](#developing-the-program)
 - [Testing](#testing)
 - [Deployment](#deployment)
 
@@ -220,7 +220,7 @@ function sendNotification() {
 
 ## Testing 
 
-### <a name="try-out"></a> Try it out
+### Try it out
 
 Run this sample by entering the following command in a terminal.
 
@@ -228,7 +228,7 @@ Run this sample by entering the following command in a terminal.
 $ ballerina run notification-sender
 ```
 
-#### <a name="response"></a> Response you'll get
+#### Response you'll get
 
 Each of the customers in your Google Sheet would receive a new customized email with the 
 **Subject : Thank You for Downloading {ProductName}**.

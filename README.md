@@ -45,7 +45,6 @@ to simply add the name to the body of a html mail template and send the email to
 - Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina), 
     [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina), 
     [Atom](https://atom.io/packages/language-ballerina))
-- [Docker](https://docs.docker.com/engine/installation/)
 - Go through the following steps to obtain credetials and tokens for both Google Sheets and Gmail APIs.
     1. Visit [Google API Console](https://console.developers.google.com), click **Create Project**, and follow the wizard 
     to create a new project.
@@ -110,8 +109,8 @@ Let's see how both of these Ballerina connectors can be used for this sample use
 First let's look at how to create the Google Sheets client endpoint as follows.
 
 ```ballerina
-endpoint gsheets4:Client spreadsheetEP {
-    clientConfig: {
+endpoint gsheets4:Client spreadsheetClient {
+    clientConfig:{
         auth:{
             accessToken:accessToken,
             refreshToken:refreshToken,
@@ -125,13 +124,13 @@ endpoint gsheets4:Client spreadsheetEP {
 Next, let's look at how to create the Gmail client endpoint as follows.
 
 ```ballerina
-endpoint Client gmailEP {
+endpoint gmail:Client gmailClient {
     clientConfig:{
         auth:{
             accessToken:accessToken,
+            refreshToken:refreshToken,
             clientId:clientId,
-            clientSecret:clientSecret,
-            refreshToken:refreshToken
+            clientSecret:clientSecret
         }
     }
 };
@@ -143,18 +142,21 @@ After creating the endpoints, let's implement the API calls inside the functions
 
 Let's look at how to get the sheet data about customer product downloads as follows.
 ```ballerina
-function getCustomerDetailsFromGSheet () returns (string[][]) {
-    string[][] values = [];
+function getCustomerDetailsFromGSheet () returns (string[][]|boolean) {
     //Read all the values from the sheet.
-    var spreadsheetRes = spreadsheetEP -> getSheetValues(spreadsheetId, sheetName, "", "");
+    string[][] values;
+    var spreadsheetRes =  spreadsheetClient->getSheetValues(spreadsheetId, sheetName, EMPTY_STRING, EMPTY_STRING);
     match spreadsheetRes {
-        string[][] vals => values = vals;
-        gsheets4:SpreadsheetError e => log:printInfo(e.errorMessage);
+        string[][] vals => {
+            log:printInfo("Retrieved customer details from spreadsheet id:" + spreadsheetId + " ; sheet name: "
+                    + sheetName);
+            return vals;
+        }
+        gsheets4:SpreadsheetError e => return false;
     }
-    return values;
 }
 ```
-The Spreadsheet connector's `getSheetValues` function is called from Spreadsheet endpoint by passing only the 
+The Spreadsheet connector's `getSheetValues` function is called from Spreadsheet endpoint by passing 
 spreadsheet id and the sheet name. The sheet values are returned as a two dimensional string array if the request is
 successful. If unsuccessful, returns a `SpreadsheetError`.
 
@@ -164,13 +166,14 @@ Next, let's look at how to send an email using the Gmail client endpoint.
 function sendMail(string customerEmail, string subject, string messageBody) {
     //Create HTML message
     gmail:MessageRequest messageRequest;
+    messageRequest.recipient = customerEmail;
     messageRequest.sender = senderEmail;
     messageRequest.subject = subject;
     messageRequest.messageBody = messageBody;
-    messageRequest.recipient = customerEmail;
     messageRequest.contentType = gmail:TEXT_HTML;
+    
     //Send mail
-    var sendMessageResponse = gmailClient->sendMessage(userId, messageRequest);
+    var sendMessageResponse = gmailClient->sendMessage(userId, untaint messageRequest);
     string messageId;
     string threadId;
     match sendMessageResponse {
@@ -199,22 +202,32 @@ row, except for the first row with column headers, and during each iteration, a 
 each customer.
 
 ```ballerina
-function sendNotification() {
-    //Retrieve the customer details from the spreadsheet.
-    string[][] values = getCustomerDetailsFromGSheet();
-    int i =0;
-    //Iterate through each customer's details and send a customized email.
-    foreach value in values {
-        //Skip the first row as it contains header values.
-        if(i > 0) {
-            string productName = value[0];
-            string CutomerName = value[1];
-            string customerEmail = value[2];
-            string subject = "Thank You for Downloading " + productName;
-            sendMail(customerEmail, subject, getCustomEmailTamplate(CutomerName, productName));
+function sendNotification() returns boolean {
+    //Retrieve the customer details from spreadsheet.
+    var customerDetails = getCustomerDetailsFromGSheet();
+    match customerDetails {
+        string[][] values => {
+            int i =0;
+            //Iterate through each customer details and send customized email.
+            foreach value in values {
+                //Skip the first row as it contains header values.
+                if(i > 0) {
+                    string productName = value[0];
+                    string customerName = value[1];
+                    string customerEmail = value[2];
+                    string subject = "Thank You for Downloading " + productName;
+                    boolean isSuccess = sendMail(customerEmail, subject,
+                        untaint getCustomEmailTemplate(customerName, productName));
+                    if (!isSuccess) {
+                        return false;
+                    }
+                }
+                i = i +1;
+            }
         }
-        i += 1;
+        boolean isSuccess => return isSuccess;
     }
+    return true;
 }
 ```
 
@@ -246,10 +259,11 @@ The following is a sample email body.
 Let's now look at sample log statements we get when running the sample for this scenario.
 
 ```bash
-INFO  [notification-sender] - Retrieved customer details from spreadsheet id:1AH8-khPiF1dBFAs_MV5AiGDcdwFUkxOMq5ZRgBnkPW0 ;sheet name: Stats 
-INFO  [notification-sender] - Sent email to tom@mail.com with message Id: 162b8e298adac15c and thread Id:162b8e298adac15c 
-INFO  [notification-sender] - Sent email to jack@mail.com with message Id: 162b8e29ac7da1da and thread Id:162b8e29ac7da1da 
-INFO  [notification-sender] - Sent email to peter@mail.com with message Id: 162b8e29edd1e593 and thread Id:162b8e29edd1e593 
+INFO  [wso2.notification-sender] - Retrieved customer details from spreadsheet id:1mzEKVRtL3ZGV0finbcd1vfa16Ed7Qaa6wBjsf31D_yU ; sheet name: Stats 
+INFO  [wso2.notification-sender] - Sent email to tom@mail.com with message Id: 163014e0e41c1b11 and thread Id:163014e0e41c1b11 
+INFO  [wso2.notification-sender] - Sent email to jack@mail.com with message Id: 163014e1167c20c4 and thread Id:163014e1167c20c4 
+INFO  [wso2.notification-sender] - Sent email to peter@mail.com with message Id: 163014e15d7476a0 and thread Id:163014e15d7476a0 
+INFO  [wso2.notification-sender] - Gmail-Google Sheets Integration -> Email sending process successfully completed! 
 ```
 
 ## Deployment

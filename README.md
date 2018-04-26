@@ -10,7 +10,7 @@ The following are the sections available in this guide.
 
 - [What you'll build](#what-youll-build)
 - [Prerequisites](#prerequisites)
-- [Developing the application](#developing-the-program)
+- [Developing the Program](#developing-the-program)
 - [Testing](#testing)
 - [Deployment](#deployment)
 

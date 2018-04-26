@@ -71,29 +71,44 @@ endpoint gmail:Client gmailClient {
     }
 };
 
-public function main(string[] args) {
-  sendNotification();
+function main(string... args) {
+  boolean isSuccess = sendNotification();
+  if(isSuccess) {
+      log:printInfo("Gmail-Google Sheets Integration -> Email sending process successfully completed!");
+  } else {
+      log:printInfo("Gmail-Google Sheets Integration -> Email sending process failed!");
+  }
 }
 
 documentation{
     Send notification to the customers.
 }
-function sendNotification() {
+function sendNotification() returns boolean {
     //Retrieve the customer details from spreadsheet.
-    string[][] values = getCustomerDetailsFromGSheet();
-    int i =0;
-    //Iterate through each customer details and send customized email.
-    foreach value in values {
-        //Skip the first row as it contains header values.
-        if(i > 0) {
-            string productName = value[0];
-            string CutomerName = value[1];
-            string customerEmail = value[2];
-            string subject = "Thank You for Downloading " + productName;
-            sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
+    var customerDetails = getCustomerDetailsFromGSheet();
+    match customerDetails {
+        string[][] values => {
+            int i =0;
+            //Iterate through each customer details and send customized email.
+            foreach value in values {
+                //Skip the first row as it contains header values.
+                if(i > 0) {
+                    string productName = value[0];
+                    string cutomerName = value[1];
+                    string customerEmail = value[2];
+                    string subject = "Thank You for Downloading " + productName;
+                    boolean isSuccess = sendMail(customerEmail, subject,
+                        untaint getCustomEmailTemplate(cutomerName, productName));
+                    if (!isSuccess) {
+                        return false;
+                    }
+                }
+                i = i +1;
+            }
         }
-        i = i +1;
+        boolean isSuccess => return isSuccess;
     }
+    return true;
 }
 
 documentation{
@@ -101,12 +116,19 @@ documentation{
 
     R{{}} - Two dimensional string array of spreadsheet cell values.
 }
-function getCustomerDetailsFromGSheet () returns (string[][]) {
+function getCustomerDetailsFromGSheet () returns (string[][]|boolean) {
     //Read all the values from the sheet.
-    string[][] values = check spreadsheetClient -> getSheetValues(spreadsheetId, sheetName, "", "");
-    log:printInfo("Retrieved customer details from spreadsheet id:" + spreadsheetId + " ;sheet name: "
-    + sheetName);
-    return values;
+    //string[][] values = check spreadsheetClient -> getSheetValues(spreadsheetId, sheetName, EMPTY_STRING, EMPTY_STRING);
+    string[][] values;
+    var spreadsheetRes =  spreadsheetClient->getSheetValues(spreadsheetId, sheetName, EMPTY_STRING, EMPTY_STRING);
+    match spreadsheetRes {
+        string[][] vals => {
+            log:printInfo("Retrieved customer details from spreadsheet id:" + spreadsheetId + " ; sheet name: "
+                    + sheetName);
+            return vals;
+        }
+        gsheets4:SpreadsheetError e => return false;
+    }
 }
 
 documentation{
@@ -119,8 +141,9 @@ documentation{
 function getCustomEmailTemplate(string customerName, string productName) returns (string){
     string emailTemplate = "<h2> Hi "+ customerName +" </h2>";
     emailTemplate = emailTemplate + "<h3> Thank you for downloading the product " + productName + " ! </h3>";
-    emailTemplate = emailTemplate + "<p> If you still have questions regarding "+ productName + ", please contact us and we" +
-        " will get in touch with you right away ! </p> ";
+    emailTemplate = emailTemplate + "<p> If you still have questions regarding "+ productName
+        + ", please contact us and we"
+        + " will get in touch with you right away ! </p> ";
     return emailTemplate;
 }
 
@@ -131,26 +154,26 @@ documentation{
     P{{subject}} - Subject of the email.
     P{{messageBody}} - Email message body to send.
 }
-function sendMail(string customerEmail, string subject, string messageBody) {
+function sendMail(string customerEmail, string subject, string messageBody) returns boolean {
     //Create html message
-    gmail:MessageOptions options = {};
-    options.sender = senderEmail;
-    gmail:Message mail = new gmail:Message();
-    match mail.createHTMLMessage(customerEmail, subject, messageBody, options, []){
-        gmail:GMailError e => log:printInfo(e.errorMessage);
-        () => {
-            //Send mail
-            var sendMessageResponse = gmailClient -> sendMessage(userId, mail);
-            string messageId;
-            string threadId;
-            match sendMessageResponse {
-                (string, string) sendStatus => {
-                    (messageId, threadId) = sendStatus;
-                    log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
-                            + threadId);
-                }
-                gmail:GMailError e => log:printInfo(e.errorMessage);
-            }
+    gmail:MessageRequest messageRequest;
+    messageRequest.recipient = customerEmail;
+    messageRequest.sender = senderEmail;
+    messageRequest.subject = subject;
+    messageRequest.messageBody = messageBody;
+    messageRequest.contentType = gmail:TEXT_HTML;
+
+    //Send mail
+    var sendMessageResponse = gmailClient->sendMessage(userId, untaint messageRequest);
+    string messageId;
+    string threadId;
+    match sendMessageResponse {
+        (string, string) sendStatus => {
+            (messageId, threadId) = sendStatus;
+            log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
+                    + threadId);
+            return true;
         }
+        gmail:GmailError e => return false;
     }
 }

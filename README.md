@@ -58,20 +58,18 @@ to simply add the name to the body of a html mail template and send the email to
     8. When you receive your authorization code, click **Exchange authorization code for tokens** to obtain the refresh 
     token and access token.         
 
-You must configure the `ballerina.conf` configuration file with the above obtained tokens, credentials and 
-other important parameters.
-
-##### ballerina.conf
-```
-ACCESS_TOKEN="access token"
-CLIENT_ID="client id"
-CLIENT_SECRET="client secret"
-REFRESH_TOKEN="refresh token"
-SPREADSHEET_ID="spreadsheet id you have extracted from the sheet url"
-SHEET_NAME="sheet name of your Goolgle Sheet. For example in above example, SHEET_NAME="Stats"
-SENDER="email address of the sender"
-USER_ID="mail address of the authorized user. You can give this value as, me"
-```
+  You must configure the `ballerina.conf` configuration file with the above obtained tokens, credentials and 
+  other important parameters as follows.
+  ```
+  ACCESS_TOKEN="access token"
+  CLIENT_ID="client id"
+  CLIENT_SECRET="client secret"
+  REFRESH_TOKEN="refresh token"
+  SPREADSHEET_ID="spreadsheet id you have extracted from the sheet url"
+  SHEET_NAME="sheet name of your Goolgle Sheet. For example in above example, SHEET_NAME="Stats"
+  SENDER="email address of the sender"
+  USER_ID="mail address of the authorized user. You can give this value as, me"
+  ```
 - Create a Google Sheet as follows from the same Google account you have obtained the client credentials and tokens 
 to access both APIs.
 

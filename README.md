@@ -283,9 +283,7 @@ Refer to the `notification-sender/tests/notification_sender_test.bal` for the im
 ## Deployment
 
 #### Deploying locally
-You can deploy the services that you developed above in your local environment. You can create the Ballerina executable archives (.balx) first and run them in your local environment as follows.
-
-**Building**
+You can deploy the services that you developed above in your local environment. You can create the Ballerina executable archives (.balx) first as follows.
 
 ```bash
 $ ballerina build notification-sender
@@ -294,7 +292,6 @@ $ ballerina build notification-sender
 After the build is successful, there will be a .balx file inside the target directory. That executable can be executed 
 as follows.
 
-**Running**
 
 ```bash
 $ ballerina run target/notification-sender.balx

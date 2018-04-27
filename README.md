@@ -10,7 +10,7 @@ The following are the sections available in this guide.
 
 - [What you'll build](#what-youll-build)
 - [Prerequisites](#prerequisites)
-- [Developing the Program](#developing-the-program)
+- [Implementation](#implemtation)
 - [Testing](#testing)
 - [Deployment](#deployment)
 
@@ -40,11 +40,8 @@ to simply add the name to the body of a html mail template and send the email to
 
 ## Prerequisites
  
-- JDK 1.8 or later
 - [Ballerina Distribution](https://ballerinalang.org/docs/quick-tour/quick-tour/#install-ballerina) 
-- Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina), 
-    [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina), 
-    [Atom](https://atom.io/packages/language-ballerina))
+- A Text Editor or an IDE
 - Go through the following steps to obtain credetials and tokens for both Google Sheets and Gmail APIs.
     1. Visit [Google API Console](https://console.developers.google.com), click **Create Project**, and follow the wizard 
     to create a new project.
@@ -60,7 +57,21 @@ to simply add the name to the body of a html mail template and send the email to
     select the required Gmail and Google Sheets API scopes, and then click **Authorize APIs**.
     8. When you receive your authorization code, click **Exchange authorization code for tokens** to obtain the refresh 
     token and access token.         
-   
+
+You must configure the `ballerina.conf` configuration file with the above obtained tokens, credentials and 
+other important parameters.
+
+##### ballerina.conf
+```
+ACCESS_TOKEN="access token"
+CLIENT_ID="client id"
+CLIENT_SECRET="client secret"
+REFRESH_TOKEN="refresh token"
+SPREADSHEET_ID="spreadsheet id you have extracted from the sheet url"
+SHEET_NAME="sheet name of your Goolgle Sheet. For example in above example, SHEET_NAME="Stats"
+SENDER="email address of the sender"
+USER_ID="mail address of the authorized user. You can give this value as, me"
+```
 - Create a Google Sheet as follows from the same Google account you have obtained the client credentials and tokens 
 to access both APIs.
 
@@ -68,9 +79,14 @@ to access both APIs.
 
 - Obtain the spreadsheet id by extracting the value between the "/d/" and the "/edit" in the URL of your spreadsheet.
 
-### Before you begin
+### Optional Requirements
+- Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina), 
+    [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina), 
+    [Atom](https://atom.io/packages/language-ballerina))
 
-##### Understand the package structure
+## Implementation
+
+### Create the package structure
 
 Ballerina is a complete programming language that can have any custom project structure as you wish. Although the 
 language allows you to have any package structure, use the following simple package structure for this project.
@@ -79,31 +95,12 @@ language allows you to have any package structure, use the following simple pack
 gmail-spreadsheet-integration
   ├── ballerina.conf  
   └── notification-sender
+      └── tests
+          └── notification_sender_test.bal
       └── notification_sender.bal
 ```
 
-You must configure the `ballerina.conf` configuration file with the above obtained tokens, credentials and 
-other important parameters.
-
-##### ballerina.conf
-```
-ACCESS_TOKEN="enter your access token here"
-CLIENT_ID="enter your client id here"
-CLIENT_SECRET="enter your client secret here"
-REFRESH_TOKEN="enter your refresh token here"
-
-SPREADSHEET_ID="enter the reference spreadsheet id"
-SHEET_NAME="enter the reference spreadsheet name"
-SENDER="enter email sender address"
-USER_ID="enter the user id. give special value 'me' for the authorized user"
-```
-- SPREADSHEET_ID is the spreadsheet id you have extracted from the sheet url.
-- SHEET_NAME is the sheet name of your Goolgle Sheet. For example in above example, SHEET_NAME="Stats"
-- SENDER is the email address of the sender.
-- USER_ID is the email address of the authorized user. You can give this value as **me**.
-
-## Developing the Program
-
+### Developing the application 
 Let's see how both of these Ballerina connectors can be used for this sample use case. 
 
 First let's look at how to create the Google Sheets client endpoint as follows.
@@ -131,7 +128,7 @@ endpoint gmail:Client gmailClient {
             refreshToken:refreshToken,
             clientId:clientId,
             clientSecret:clientSecret
-        }
+        }   
     }
 };
 ```
@@ -241,8 +238,6 @@ Run this sample by entering the following command in a terminal.
 $ ballerina run notification-sender
 ```
 
-#### Response you'll get
-
 Each of the customers in your Google Sheet would receive a new customized email with the 
 **Subject : Thank You for Downloading {ProductName}**.
 
@@ -265,6 +260,25 @@ INFO  [wso2.notification-sender] - Sent email to jack@mail.com with message Id: 
 INFO  [wso2.notification-sender] - Sent email to peter@mail.com with message Id: 163014e15d7476a0 and thread Id:163014e15d7476a0 
 INFO  [wso2.notification-sender] - Gmail-Google Sheets Integration -> Email sending process successfully completed! 
 ```
+### Writing unit tests    
+
+In Ballerina, the unit test cases should be in the same package inside a folder named as 'tests'.  When writing the test 
+functions the below convention should be followed.
+
+- Test functions should be annotated with `@test:Config`. See the below example.
+```ballerina
+   @test:Config
+   function testSendNotification() {
+```
+  
+This guide contains the unit test case for the `sendNotification` function.
+
+To run the unit test, go to the sample root directory and run the following command.
+```bash
+$ ballerina test notification-sender
+```
+   
+Refer to the `notification-sender/tests/notification_sender_test.bal` for the implementation of the test file.
 
 ## Deployment
 
@@ -274,7 +288,7 @@ You can deploy the services that you developed above in your local environment. 
 **Building**
 
 ```bash
-$ ballerina build gmail-spreadsheet-integration
+$ ballerina build notification-sender
 ```
 
 After the build is successful, there will be a .balx file inside the target directory. That executable can be executed 
@@ -283,5 +297,5 @@ as follows.
 **Running**
 
 ```bash
-$ ballerina run <Exec_Archive_File_Name>
+$ ballerina run target/notification-sender.balx
 ```

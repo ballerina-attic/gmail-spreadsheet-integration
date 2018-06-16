@@ -71,7 +71,7 @@ endpoint gmail:Client gmailClient {
     }
 };
 
-public function main(string[] args) {
+function main(string... args) {
   sendNotification();
 }
 
@@ -133,24 +133,23 @@ documentation{
 }
 function sendMail(string customerEmail, string subject, string messageBody) {
     //Create html message
-    gmail:MessageOptions options = {};
-    options.sender = senderEmail;
-    gmail:Message mail = new gmail:Message();
-    match mail.createHTMLMessage(customerEmail, subject, messageBody, options, []){
-        gmail:GMailError e => log:printInfo(e.errorMessage);
-        () => {
-            //Send mail
-            var sendMessageResponse = gmailClient -> sendMessage(userId, mail);
-            string messageId;
-            string threadId;
-            match sendMessageResponse {
-                (string, string) sendStatus => {
-                    (messageId, threadId) = sendStatus;
-                    log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
-                            + threadId);
-                }
-                gmail:GMailError e => log:printInfo(e.errorMessage);
-            }
+    gmail:MessageRequest messageRequest = {};
+    messageRequest.recipient = customerEmail;
+    messageRequest.sender = senderEmail;
+    messageRequest.subject = subject;
+    messageRequest.messageBody = messageBody;
+    messageRequest.contentType = gmail:TEXT_HTML;
+
+    //Send mail
+    var sendMessageResponse = gmailClient -> sendMessage(userId, messageRequest);
+    string messageId;
+    string threadId;
+    match sendMessageResponse {
+        (string, string) sendStatus => {
+            (messageId, threadId) = sendStatus;
+            log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
+                    + threadId);
         }
+        gmail:GmailError e => log:printInfo(e.message);
     }
 }

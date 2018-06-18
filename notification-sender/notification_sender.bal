@@ -133,7 +133,7 @@ documentation{
 }
 function sendMail(string customerEmail, string subject, string messageBody) {
     //Create html message
-    gmail:MessageRequest messageRequest = {};
+    gmail:MessageRequest messageRequest;
     messageRequest.recipient = customerEmail;
     messageRequest.sender = senderEmail;
     messageRequest.subject = subject;
@@ -141,7 +141,7 @@ function sendMail(string customerEmail, string subject, string messageBody) {
     messageRequest.contentType = gmail:TEXT_HTML;
 
     //Send mail
-    var sendMessageResponse = gmailClient->sendMessage(userId, messageRequest);
+    var sendMessageResponse = gmailClient->sendMessage(userId, untaint messageRequest);
     string messageId;
     string threadId;
     match sendMessageResponse {

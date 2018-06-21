@@ -41,7 +41,7 @@ to simply add the name to the body of a html mail template and send the email to
 ## Prerequisites
  
 - [Ballerina Distribution](https://ballerinalang.org/docs/quick-tour/quick-tour/#install-ballerina) 
-- A Text Editor or an IDE
+- Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina) and [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina)
 - Go through the following steps to obtain credetials and tokens for both Google Sheets and Gmail APIs.
     1. Visit [Google API Console](https://console.developers.google.com), click **Create Project**, and follow the wizard 
     to create a new project.
@@ -70,6 +70,7 @@ to simply add the name to the body of a html mail template and send the email to
   SENDER="email address of the sender"
   USER_ID="mail address of the authorized user. You can give this value as, me"
   ```
+
 - Create a Google Sheet as follows from the same Google account you have obtained the client credentials and tokens 
 to access both APIs.
 
@@ -151,15 +152,16 @@ function getCustomerDetailsFromGSheet () returns (string[][]|boolean) {
     }
 }
 ```
-The Spreadsheet connector's `getSheetValues` function is called from Spreadsheet endpoint by passing 
-spreadsheet id and the sheet name. The sheet values are returned as a two dimensional string array if the request is
-successful. If unsuccessful, returns a `SpreadsheetError`.
+
+The Spreadsheet connector's `getSheetValues` function is called from Spreadsheet endpoint by passing the spreadsheet id and the sheet name. The sheet values are returned as a two dimensional string array if the request is
+successful. If unsuccessful, it returns a `SpreadsheetError`.
 
 Next, let's look at how to send an email using the Gmail client endpoint.
 
 ```ballerina
 function sendMail(string customerEmail, string subject, string messageBody) {
     //Create HTML message
+
     gmail:MessageRequest messageRequest;
     messageRequest.recipient = customerEmail;
     messageRequest.sender = senderEmail;
@@ -182,19 +184,11 @@ function sendMail(string customerEmail, string subject, string messageBody) {
 }
 ```
 
-First, a new `MessageRequest` type is created and assigned the fields for sending an email. The content type of the 
-message request is set as `TEXT_HTML`. Then, Gmail connector's `sendMessage` function is called by
-passing the `MessageRequest` and `userId`.
+First, a new `MessageRequest` type is created and assigned the fields for sending an email. The content type of the message request is set as `TEXT_HTML`. Then, Gmail connector's `sendMessage` function is called by passing the `MessageRequest` and `userId`.
 
-The response from `sendMessage` is either a string tuple with the message ID and thread ID 
-(if the message was sent successfully) or a `GmailError` (if the message was unsuccessful). The `match` operation can be 
-used to handle the response if an error occurs.    
+The response from `sendMessage` is either a string tuple with the message ID and thread ID (if the message was sent successfully) or a `GmailError` (if the message was unsuccessful). The `match` operation can be used to handle the response if an error occurs.    
 
-The main function in `notification_sender.bal` calls `sendNotification` function. Inside `sendNotification`, the customer 
-details are taken from the sheet by first calling `getCustomerDetailsFromGSheet`. Then, the rows in the returned 
-sheet are subsequently iterated. During each iteration, cell values in the first three columns are extracted for each 
-row, except for the first row with column headers, and during each iteration, a custom HTML mail is created and sent for 
-each customer.
+The main function in `notification_sender.bal` calls `sendNotification` function. Inside `sendNotification`, the customer details are taken from the sheet by first calling `getCustomerDetailsFromGSheet`. Then, the rows in the returned sheet are subsequently iterated. During each iteration, cell values in the first three columns are extracted for each row, except for the first row with column headers, and during each iteration, a custom HTML mail is created and sent for each customer.
 
 ```ballerina
 function sendNotification() returns boolean {
@@ -236,8 +230,7 @@ Run this sample by entering the following command in a terminal.
 $ ballerina run notification-sender
 ```
 
-Each of the customers in your Google Sheet would receive a new customized email with the 
-**Subject : Thank You for Downloading {ProductName}**.
+Each of the customers in your Google Sheet would receive a new customized email with the subject: **Thank You for Downloading {ProductName}**.
 
 The following is a sample email body.
 
@@ -247,6 +240,7 @@ The following is a sample email body.
     Thank you for downloading the product ESB!
 
     If you still have questions regarding ESB, please contact us and we will get in touch with you right away!
+
 ```
 
 Let's now look at sample log statements we get when running the sample for this scenario.
@@ -257,7 +251,9 @@ INFO  [wso2.notification-sender] - Sent email to tom@mail.com with message Id: 1
 INFO  [wso2.notification-sender] - Sent email to jack@mail.com with message Id: 163014e1167c20c4 and thread Id:163014e1167c20c4 
 INFO  [wso2.notification-sender] - Sent email to peter@mail.com with message Id: 163014e15d7476a0 and thread Id:163014e15d7476a0 
 INFO  [wso2.notification-sender] - Gmail-Google Sheets Integration -> Email sending process successfully completed! 
+
 ```
+
 ### Writing unit tests    
 
 In Ballerina, the unit test cases should be in the same package inside a folder named as 'tests'.  When writing the test 
@@ -283,6 +279,8 @@ Refer to the `notification-sender/tests/notification_sender_test.bal` for the im
 #### Deploying locally
 You can deploy the services that you developed above in your local environment. You can create the Ballerina executable archives (.balx) first as follows.
 
+**Building**
+
 ```bash
 $ ballerina build notification-sender
 ```
@@ -290,6 +288,7 @@ $ ballerina build notification-sender
 After the build is successful, there will be a .balx file inside the target directory. That executable can be executed 
 as follows.
 
+**Running**
 
 ```bash
 $ ballerina run target/notification-sender.balx

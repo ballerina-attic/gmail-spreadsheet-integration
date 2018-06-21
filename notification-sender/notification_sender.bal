@@ -47,12 +47,12 @@ documentation{
     Google Sheets client endpoint declaration with http client configurations.
 }
 endpoint gsheets4:Client spreadsheetClient {
-    clientConfig:{
-        auth:{
-            accessToken:accessToken,
-            refreshToken:refreshToken,
-            clientId:clientId,
-            clientSecret:clientSecret
+    clientConfig: {
+        auth: {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            clientId: clientId,
+            clientSecret: clientSecret
         }
     }
 };
@@ -61,18 +61,18 @@ documentation{
     GMail client endpoint declaration with oAuth2 client configurations.
 }
 endpoint gmail:Client gmailClient {
-    clientConfig:{
-        auth:{
-            accessToken:accessToken,
-            refreshToken:refreshToken,
-            clientId:clientId,
-            clientSecret:clientSecret
+    clientConfig: {
+        auth: {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            clientId: clientId,
+            clientSecret: clientSecret
         }
     }
 };
 
-public function main(string[] args) {
-  sendNotification();
+function main(string... args) {
+    sendNotification();
 }
 
 documentation{
@@ -81,18 +81,18 @@ documentation{
 function sendNotification() {
     //Retrieve the customer details from spreadsheet.
     string[][] values = getCustomerDetailsFromGSheet();
-    int i =0;
+    int i = 0;
     //Iterate through each customer details and send customized email.
     foreach value in values {
         //Skip the first row as it contains header values.
-        if(i > 0) {
+        if (i > 0) {
             string productName = value[0];
             string CutomerName = value[1];
             string customerEmail = value[2];
             string subject = "Thank You for Downloading " + productName;
             sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
         }
-        i = i +1;
+        i = i + 1;
     }
 }
 
@@ -101,11 +101,11 @@ documentation{
 
     R{{}} - Two dimensional string array of spreadsheet cell values.
 }
-function getCustomerDetailsFromGSheet () returns (string[][]) {
+function getCustomerDetailsFromGSheet() returns (string[][]) {
     //Read all the values from the sheet.
-    string[][] values = check spreadsheetClient -> getSheetValues(spreadsheetId, sheetName, "", "");
+    string[][] values = check spreadsheetClient->getSheetValues(spreadsheetId, sheetName, "", "");
     log:printInfo("Retrieved customer details from spreadsheet id:" + spreadsheetId + " ;sheet name: "
-    + sheetName);
+            + sheetName);
     return values;
 }
 
@@ -116,11 +116,11 @@ documentation{
     P{{productName}} - Name of the product which the customer has downloaded.
     R{{}} - String customized email message.
 }
-function getCustomEmailTemplate(string customerName, string productName) returns (string){
-    string emailTemplate = "<h2> Hi "+ customerName +" </h2>";
+function getCustomEmailTemplate(string customerName, string productName) returns (string) {
+    string emailTemplate = "<h2> Hi " + customerName + " </h2>";
     emailTemplate = emailTemplate + "<h3> Thank you for downloading the product " + productName + " ! </h3>";
-    emailTemplate = emailTemplate + "<p> If you still have questions regarding "+ productName + ", please contact us and we" +
-        " will get in touch with you right away ! </p> ";
+    emailTemplate = emailTemplate + "<p> If you still have questions regarding " + productName +
+        ", please contact us and we will get in touch with you right away ! </p> ";
     return emailTemplate;
 }
 
@@ -133,24 +133,23 @@ documentation{
 }
 function sendMail(string customerEmail, string subject, string messageBody) {
     //Create html message
-    gmail:MessageOptions options = {};
-    options.sender = senderEmail;
-    gmail:Message mail = new gmail:Message();
-    match mail.createHTMLMessage(customerEmail, subject, messageBody, options, []){
-        gmail:GMailError e => log:printInfo(e.errorMessage);
-        () => {
-            //Send mail
-            var sendMessageResponse = gmailClient -> sendMessage(userId, mail);
-            string messageId;
-            string threadId;
-            match sendMessageResponse {
-                (string, string) sendStatus => {
-                    (messageId, threadId) = sendStatus;
-                    log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
-                            + threadId);
-                }
-                gmail:GMailError e => log:printInfo(e.errorMessage);
-            }
+    gmail:MessageRequest messageRequest;
+    messageRequest.recipient = customerEmail;
+    messageRequest.sender = senderEmail;
+    messageRequest.subject = subject;
+    messageRequest.messageBody = messageBody;
+    messageRequest.contentType = gmail:TEXT_HTML;
+
+    //Send mail
+    var sendMessageResponse = gmailClient->sendMessage(userId, untaint messageRequest);
+    string messageId;
+    string threadId;
+    match sendMessageResponse {
+        (string, string) sendStatus => {
+            (messageId, threadId) = sendStatus;
+            log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
+                    + threadId);
         }
+        gmail:GmailError e => log:printInfo(e.message);
     }
 }

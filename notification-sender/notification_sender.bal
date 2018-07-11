@@ -72,7 +72,13 @@ endpoint gmail:Client gmailClient {
 };
 
 function main(string... args) {
-    sendNotification();
+    log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers");
+    boolean result = sendNotification();
+    if (result) {
+        log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers successfully completed!");
+    } else {
+        log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers failed!");
+    }
 }
 
 documentation{

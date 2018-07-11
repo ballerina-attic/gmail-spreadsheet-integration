@@ -159,16 +159,15 @@ successful. If unsuccessful, it returns a `SpreadsheetError`.
 Next, let's look at how to send an email using the Gmail client endpoint.
 
 ```ballerina
-function sendMail(string customerEmail, string subject, string messageBody) {
-    //Create HTML message
-
+function sendMail(string customerEmail, string subject, string messageBody) returns boolean {
+    //Create html message
     gmail:MessageRequest messageRequest;
     messageRequest.recipient = customerEmail;
     messageRequest.sender = senderEmail;
     messageRequest.subject = subject;
     messageRequest.messageBody = messageBody;
     messageRequest.contentType = gmail:TEXT_HTML;
-    
+
     //Send mail
     var sendMessageResponse = gmailClient->sendMessage(userId, untaint messageRequest);
     string messageId;
@@ -178,8 +177,12 @@ function sendMail(string customerEmail, string subject, string messageBody) {
             (messageId, threadId) = sendStatus;
             log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
                     + threadId);
+            return true;
         }
-        gmail:GmailError e => log:printInfo(e.message);
+        gmail:GmailError e => {
+            log:printInfo(e.message);
+            return false;
+        }
     }
 }
 ```
@@ -193,30 +196,25 @@ The main function in `notification_sender.bal` calls `sendNotification` function
 ```ballerina
 function sendNotification() returns boolean {
     //Retrieve the customer details from spreadsheet.
-    var customerDetails = getCustomerDetailsFromGSheet();
-    match customerDetails {
-        string[][] values => {
-            int i =0;
-            //Iterate through each customer details and send customized email.
-            foreach value in values {
-                //Skip the first row as it contains header values.
-                if(i > 0) {
-                    string productName = value[0];
-                    string customerName = value[1];
-                    string customerEmail = value[2];
-                    string subject = "Thank You for Downloading " + productName;
-                    boolean isSuccess = sendMail(customerEmail, subject,
-                        untaint getCustomEmailTemplate(customerName, productName));
-                    if (!isSuccess) {
-                        return false;
-                    }
-                }
-                i = i +1;
+    string[][] values = getCustomerDetailsFromGSheet();
+    int i = 0;
+    boolean isSuccess;
+    //Iterate through each customer details and send customized email.
+    foreach value in values {
+        //Skip the first row as it contains header values.
+        if (i > 0) {
+            string productName = value[0];
+            string CutomerName = value[1];
+            string customerEmail = value[2];
+            string subject = "Thank You for Downloading " + productName;
+            isSuccess = sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
+            if (!isSuccess) {
+                break;
             }
         }
-        boolean isSuccess => return isSuccess;
+        i = i + 1;
     }
-    return true;
+    return isSuccess;
 }
 ```
 

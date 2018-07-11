@@ -77,11 +77,14 @@ function main(string... args) {
 
 documentation{
     Send notification to the customers.
+
+    R{{}} State of whether the process of sending notification is success or not
 }
-function sendNotification() {
+function sendNotification() returns boolean {
     //Retrieve the customer details from spreadsheet.
     string[][] values = getCustomerDetailsFromGSheet();
     int i = 0;
+    boolean isSuccess;
     //Iterate through each customer details and send customized email.
     foreach value in values {
         //Skip the first row as it contains header values.
@@ -90,10 +93,14 @@ function sendNotification() {
             string CutomerName = value[1];
             string customerEmail = value[2];
             string subject = "Thank You for Downloading " + productName;
-            sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
+            isSuccess = sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
+            if (!isSuccess) {
+                break;
+            }
         }
         i = i + 1;
     }
+    return isSuccess;
 }
 
 documentation{
@@ -130,8 +137,9 @@ documentation{
     P{{customerEmail}} - Recipient's email address.
     P{{subject}} - Subject of the email.
     P{{messageBody}} - Email message body to send.
+    R{{}} The status of sending email success or not
 }
-function sendMail(string customerEmail, string subject, string messageBody) {
+function sendMail(string customerEmail, string subject, string messageBody) returns boolean {
     //Create html message
     gmail:MessageRequest messageRequest;
     messageRequest.recipient = customerEmail;
@@ -149,7 +157,11 @@ function sendMail(string customerEmail, string subject, string messageBody) {
             (messageId, threadId) = sendStatus;
             log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
                     + threadId);
+            return true;
         }
-        gmail:GmailError e => log:printInfo(e.message);
+        gmail:GmailError e => {
+            log:printInfo(e.message);
+            return false;
+        }
     }
 }

@@ -21,5 +21,5 @@ import ballerina/test;
 function testSendSmsToLeads() {
     log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers");
     boolean result = sendNotification();
-    test:assertTrue(result, "Gmail-Spreadsheet Integration -> Sending notification to customers failed!");
+    test:assertTrue(result, msg = "Gmail-Spreadsheet Integration -> Sending notification to customers failed!");
 }

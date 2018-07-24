@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ballerina-guides/gmail-spreadsheet-integration.svg?branch=master)](https://travis-ci.org/ballerina-guides/gmail-spreadsheet-integration)
+
 # Gmail-Google Sheets Integration
 
 [Google Sheets](https://www.google.com/sheets/about/) is an online spreadsheet that lets users create and format 

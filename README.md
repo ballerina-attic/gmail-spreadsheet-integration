@@ -291,5 +291,5 @@ as follows.
 **Running**
 
 ```bash
-$ ballerina run target/notification-sender.balx
+$ ballerina run --config ./ballerina.conf target/notification-sender.balx
 ```

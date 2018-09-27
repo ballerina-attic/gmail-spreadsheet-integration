@@ -19,33 +19,31 @@ import ballerina/log;
 import wso2/gsheets4;
 import wso2/gmail;
 
-documentation{A valid access token with gmail and google sheets access.}
+# A valid access token with gmail and google sheets access.
 string accessToken = config:getAsString("ACCESS_TOKEN");
 
-documentation{The client ID for your application.}
+# The client ID for your application.
 string clientId = config:getAsString("CLIENT_ID");
 
-documentation{The client secret for your application.}
+# The client secret for your application.
 string clientSecret = config:getAsString("CLIENT_SECRET");
 
-documentation{A valid refreshToken with gmail and google sheets access.}
+# A valid refreshToken with gmail and google sheets access.
 string refreshToken = config:getAsString("REFRESH_TOKEN");
 
-documentation{Spreadsheet id of the reference google sheet.}
+# Spreadsheet id of the reference google sheet.
 string spreadsheetId = config:getAsString("SPREADSHEET_ID");
 
-documentation{Sheet name of the reference googlle sheet.}
+# Sheet name of the reference googlle sheet.
 string sheetName = config:getAsString("SHEET_NAME");
 
-documentation{Sender email address.}
+# Sender email address.
 string senderEmail = config:getAsString("SENDER");
 
-documentation{The user's email address.}
+# The user's email address.
 string userId = config:getAsString("USER_ID");
 
-documentation{
-    Google Sheets client endpoint declaration with http client configurations.
-}
+# Google Sheets client endpoint declaration with http client configurations.
 endpoint gsheets4:Client spreadsheetClient {
     clientConfig: {
         auth: {
@@ -57,9 +55,7 @@ endpoint gsheets4:Client spreadsheetClient {
     }
 };
 
-documentation{
-    GMail client endpoint declaration with oAuth2 client configurations.
-}
+# GMail client endpoint declaration with oAuth2 client configurations.
 endpoint gmail:Client gmailClient {
     clientConfig: {
         auth: {
@@ -71,7 +67,9 @@ endpoint gmail:Client gmailClient {
     }
 };
 
-function main(string... args) {
+# Main function to run the integration system.
+# + args - Runtime parameters
+public function main(string... args) {
     log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers");
     boolean result = sendNotification();
     if (result) {
@@ -81,11 +79,8 @@ function main(string... args) {
     }
 }
 
-documentation{
-    Send notification to the customers.
-
-    R{{}} State of whether the process of sending notification is success or not
-}
+# Send notification to the customers.
+# + return - State of whether the process of sending notification is success or not
 function sendNotification() returns boolean {
     //Retrieve the customer details from spreadsheet.
     string[][] values = getCustomerDetailsFromGSheet();
@@ -109,11 +104,8 @@ function sendNotification() returns boolean {
     return isSuccess;
 }
 
-documentation{
-    Retrieves customer details from the spreadsheet statistics.
-
-    R{{}} - Two dimensional string array of spreadsheet cell values.
-}
+# Retrieves customer details from the spreadsheet statistics.
+# + return - Two dimensional string array of spreadsheet cell values.
 function getCustomerDetailsFromGSheet() returns (string[][]) {
     //Read all the values from the sheet.
     string[][] values = check spreadsheetClient->getSheetValues(spreadsheetId, sheetName, "", "");
@@ -122,13 +114,10 @@ function getCustomerDetailsFromGSheet() returns (string[][]) {
     return values;
 }
 
-documentation{
-    Get the customized email template.
-
-    P{{customerName}} - Name of the customer.
-    P{{productName}} - Name of the product which the customer has downloaded.
-    R{{}} - String customized email message.
-}
+# Get the customized email template.
+# + customerName - Name of the customer.
+# + productName - Name of the product which the customer has downloaded.
+# + return - String customized email message.
 function getCustomEmailTemplate(string customerName, string productName) returns (string) {
     string emailTemplate = "<h2> Hi " + customerName + " </h2>";
     emailTemplate = emailTemplate + "<h3> Thank you for downloading the product " + productName + " ! </h3>";
@@ -137,14 +126,11 @@ function getCustomEmailTemplate(string customerName, string productName) returns
     return emailTemplate;
 }
 
-documentation{
-    Send email with the given message body to the specified recipient for dowloading the specified product.
-
-    P{{customerEmail}} - Recipient's email address.
-    P{{subject}} - Subject of the email.
-    P{{messageBody}} - Email message body to send.
-    R{{}} The status of sending email success or not
-}
+# Send email with the given message body to the specified recipient for dowloading the specified product.
+# + customerEmail - Recipient's email address.
+# + subject - Subject of the email.
+# + messageBody - Email message body to send.
+# + return - The status of sending email success or not
 function sendMail(string customerEmail, string subject, string messageBody) returns boolean {
     //Create html message
     gmail:MessageRequest messageRequest;

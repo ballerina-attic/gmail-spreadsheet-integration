@@ -269,7 +269,7 @@ This guide contains the unit test case for the `sendNotification` function.
 
 To run the unit test, go to the sample root directory and run the following command.
 ```bash
-$ ballerina test notification-sender
+$ ballerina test --config ./ballerina.conf notification-sender
 ```
    
 Refer to the `notification-sender/tests/notification_sender_test.bal` for the implementation of the test file.

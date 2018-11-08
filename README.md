@@ -110,6 +110,7 @@ First let's look at how to create the Google Sheets client endpoint as follows.
 endpoint gsheets4:Client spreadsheetClient {
     clientConfig:{
         auth:{
+            scheme: http:OAUTH2,
             accessToken:accessToken,
             refreshToken:refreshToken,
             clientId:clientId,
@@ -125,6 +126,7 @@ Next, let's look at how to create the Gmail client endpoint as follows.
 endpoint gmail:Client gmailClient {
     clientConfig:{
         auth:{
+            scheme: http:OAUTH2,
             accessToken:accessToken,
             refreshToken:refreshToken,
             clientId:clientId,

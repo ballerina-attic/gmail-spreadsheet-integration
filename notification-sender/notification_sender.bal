@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/config;
+import ballerina/http;
 import ballerina/log;
 import wso2/gsheets4;
 import wso2/gmail;
@@ -47,6 +48,7 @@ string userId = config:getAsString("USER_ID");
 endpoint gsheets4:Client spreadsheetClient {
     clientConfig: {
         auth: {
+            scheme: http:OAUTH2,
             accessToken: accessToken,
             refreshToken: refreshToken,
             clientId: clientId,
@@ -59,6 +61,7 @@ endpoint gsheets4:Client spreadsheetClient {
 endpoint gmail:Client gmailClient {
     clientConfig: {
         auth: {
+            scheme: http:OAUTH2,
             accessToken: accessToken,
             refreshToken: refreshToken,
             clientId: clientId,

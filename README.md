@@ -87,10 +87,10 @@ to access both APIs.
 
 ## Implementation
 
-### Create the package structure
+### Create the module structure
 
 Ballerina is a complete programming language that can have any custom project structure as you wish. Although the 
-language allows you to have any package structure, use the following simple package structure for this project.
+language allows you to have any module structure, use the following simple module structure for this project.
 
 ```
 gmail-spreadsheet-integration
@@ -107,33 +107,33 @@ Let's see how both of these Ballerina connectors can be used for this sample use
 First let's look at how to create the Google Sheets client endpoint as follows.
 
 ```ballerina
-endpoint gsheets4:Client spreadsheetClient {
-    clientConfig:{
-        auth:{
+gsheets4:Client spreadsheetClient = new({
+    clientConfig: {
+        auth: {
             scheme: http:OAUTH2,
-            accessToken:accessToken,
-            refreshToken:refreshToken,
-            clientId:clientId,
-            clientSecret:clientSecret
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            clientId: clientId,
+            clientSecret: clientSecret
         }
     }
-};
+});
 ```
 
 Next, let's look at how to create the Gmail client endpoint as follows.
 
 ```ballerina
-endpoint gmail:Client gmailClient {
-    clientConfig:{
-        auth:{
+gmail:Client gmailClient = new({
+    clientConfig: {
+        auth: {
             scheme: http:OAUTH2,
-            accessToken:accessToken,
-            refreshToken:refreshToken,
-            clientId:clientId,
-            clientSecret:clientSecret
-        }   
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            clientId: clientId,
+            clientSecret: clientSecret
+        }
     }
-};
+});
 ```
 
 Note that, in the implementation, each of the above endpoint configuration parameters are read from the `ballerina.conf` file.
@@ -142,18 +142,12 @@ After creating the endpoints, let's implement the API calls inside the functions
 
 Let's look at how to get the sheet data about customer product downloads as follows.
 ```ballerina
-function getCustomerDetailsFromGSheet () returns (string[][]|boolean) {
+function getCustomerDetailsFromGSheet() returns string[][]|error {
     //Read all the values from the sheet.
-    string[][] values;
-    var spreadsheetRes =  spreadsheetClient->getSheetValues(spreadsheetId, sheetName, EMPTY_STRING, EMPTY_STRING);
-    match spreadsheetRes {
-        string[][] vals => {
-            log:printInfo("Retrieved customer details from spreadsheet id:" + spreadsheetId + " ; sheet name: "
-                    + sheetName);
-            return vals;
-        }
-        gsheets4:SpreadsheetError e => return false;
-    }
+    string[][] values = check spreadsheetClient->getSheetValues(spreadsheetId, sheetName, "", "");
+    log:printInfo("Retrieved customer details from spreadsheet id: " + spreadsheetId + " ; sheet name: "
+            + sheetName);
+    return values;
 }
 ```
 
@@ -176,17 +170,14 @@ function sendMail(string customerEmail, string subject, string messageBody) retu
     var sendMessageResponse = gmailClient->sendMessage(userId, untaint messageRequest);
     string messageId;
     string threadId;
-    match sendMessageResponse {
-        (string, string) sendStatus => {
-            (messageId, threadId) = sendStatus;
-            log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
-                    + threadId);
-            return true;
-        }
-        gmail:GmailError e => {
-            log:printInfo(e.message);
-            return false;
-        }
+    if (sendMessageResponse is (string, string)) {
+        (messageId, threadId) = sendMessageResponse;
+        log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId +
+            " and thread Id:" + threadId);
+        return true;
+    } else {
+        log:printInfo(<string>sendMessageResponse.detail().message);
+        return false;
     }
 }
 ```
@@ -200,25 +191,30 @@ The main function in `notification_sender.bal` calls `sendNotification` function
 ```ballerina
 function sendNotification() returns boolean {
     //Retrieve the customer details from spreadsheet.
-    string[][] values = getCustomerDetailsFromGSheet();
-    int i = 0;
-    boolean isSuccess;
-    //Iterate through each customer details and send customized email.
-    foreach value in values {
-        //Skip the first row as it contains header values.
-        if (i > 0) {
-            string productName = value[0];
-            string CutomerName = value[1];
-            string customerEmail = value[2];
-            string subject = "Thank You for Downloading " + productName;
-            isSuccess = sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
-            if (!isSuccess) {
-                break;
+    var customerDetails = getCustomerDetailsFromGSheet();
+    if (customerDetails is error) {
+        log:printError("Failed to retrieve customer details from GSheet", err = customerDetails);
+        return false;
+    } else {
+        int i = 0;
+        boolean isSuccess = false;
+        //Iterate through each customer details and send customized email.
+        foreach value in customerDetails {
+            //Skip the first row as it contains header values.
+            if (i > 0) {
+                string productName = value[0];
+                string CutomerName = value[1];
+                string customerEmail = value[2];
+                string subject = "Thank You for Downloading " + productName;
+                isSuccess = sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
+                if (!isSuccess) {
+                    break;
+                }
             }
+            i += 1;
         }
-        i = i + 1;
+        return isSuccess;
     }
-    return isSuccess;
 }
 ```
 
@@ -248,7 +244,7 @@ The following is a sample email body.
 Let's now look at sample log statements we get when running the sample for this scenario.
 
 ```bash
-INFO  [wso2.notification-sender] - Retrieved customer details from spreadsheet id:1mzEKVRtL3ZGV0finbcd1vfa16Ed7Qaa6wBjsf31D_yU ; sheet name: Stats 
+INFO  [wso2.notification-sender] - Retrieved customer details from spreadsheet id: 1mzEKVRtL3ZGV0finbcd1vfa16Ed7Qaa6wBjsf31D_yU; sheet name: Stats
 INFO  [wso2.notification-sender] - Sent email to tom@mail.com with message Id: 163014e0e41c1b11 and thread Id:163014e0e41c1b11 
 INFO  [wso2.notification-sender] - Sent email to jack@mail.com with message Id: 163014e1167c20c4 and thread Id:163014e1167c20c4 
 INFO  [wso2.notification-sender] - Sent email to peter@mail.com with message Id: 163014e15d7476a0 and thread Id:163014e15d7476a0 
@@ -258,7 +254,7 @@ INFO  [wso2.notification-sender] - Gmail-Google Sheets Integration -> Email send
 
 ### Writing unit tests    
 
-In Ballerina, the unit test cases should be in the same package inside a folder named as 'tests'.  When writing the test 
+In Ballerina, the unit test cases should be in the same module inside a folder named as 'tests'.  When writing the test
 functions the below convention should be followed.
 
 - Test functions should be annotated with `@test:Config`. See the below example.

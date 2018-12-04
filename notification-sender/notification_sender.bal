@@ -45,7 +45,7 @@ string senderEmail = config:getAsString("SENDER");
 string userId = config:getAsString("USER_ID");
 
 # Google Sheets client endpoint declaration with http client configurations.
-endpoint gsheets4:Client spreadsheetClient {
+gsheets4:Client spreadsheetClient = new({
     clientConfig: {
         auth: {
             scheme: http:OAUTH2,
@@ -55,10 +55,10 @@ endpoint gsheets4:Client spreadsheetClient {
             clientSecret: clientSecret
         }
     }
-};
+});
 
 # GMail client endpoint declaration with oAuth2 client configurations.
-endpoint gmail:Client gmailClient {
+gmail:Client gmailClient = new({
     clientConfig: {
         auth: {
             scheme: http:OAUTH2,
@@ -68,11 +68,10 @@ endpoint gmail:Client gmailClient {
             clientSecret: clientSecret
         }
     }
-};
+});
 
 # Main function to run the integration system.
-# + args - Runtime parameters
-public function main(string... args) {
+public function main() {
     log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers");
     boolean result = sendNotification();
     if (result) {
@@ -83,45 +82,53 @@ public function main(string... args) {
 }
 
 # Send notification to the customers.
+#
 # + return - State of whether the process of sending notification is success or not
 function sendNotification() returns boolean {
     //Retrieve the customer details from spreadsheet.
-    string[][] values = getCustomerDetailsFromGSheet();
-    int i = 0;
-    boolean isSuccess;
-    //Iterate through each customer details and send customized email.
-    foreach value in values {
-        //Skip the first row as it contains header values.
-        if (i > 0) {
-            string productName = value[0];
-            string CutomerName = value[1];
-            string customerEmail = value[2];
-            string subject = "Thank You for Downloading " + productName;
-            isSuccess = sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
-            if (!isSuccess) {
-                break;
+    var customerDetails = getCustomerDetailsFromGSheet();
+    if (customerDetails is error) {
+        log:printError("Failed to retrieve customer details from GSheet", err = customerDetails);
+        return false;
+    } else {
+        int i = 0;
+        boolean isSuccess = false;
+        //Iterate through each customer details and send customized email.
+        foreach value in customerDetails {
+            //Skip the first row as it contains header values.
+            if (i > 0) {
+                string productName = value[0];
+                string CutomerName = value[1];
+                string customerEmail = value[2];
+                string subject = "Thank You for Downloading " + productName;
+                isSuccess = sendMail(customerEmail, subject, getCustomEmailTemplate(CutomerName, productName));
+                if (!isSuccess) {
+                    break;
+                }
             }
+            i += 1;
         }
-        i = i + 1;
+        return isSuccess;
     }
-    return isSuccess;
 }
 
 # Retrieves customer details from the spreadsheet statistics.
+#
 # + return - Two dimensional string array of spreadsheet cell values.
-function getCustomerDetailsFromGSheet() returns (string[][]) {
+function getCustomerDetailsFromGSheet() returns string[][]|error {
     //Read all the values from the sheet.
     string[][] values = check spreadsheetClient->getSheetValues(spreadsheetId, sheetName, "", "");
-    log:printInfo("Retrieved customer details from spreadsheet id:" + spreadsheetId + " ;sheet name: "
+    log:printInfo("Retrieved customer details from spreadsheet id: " + spreadsheetId + "; sheet name: "
             + sheetName);
     return values;
 }
 
 # Get the customized email template.
+#
 # + customerName - Name of the customer.
 # + productName - Name of the product which the customer has downloaded.
 # + return - String customized email message.
-function getCustomEmailTemplate(string customerName, string productName) returns (string) {
+function getCustomEmailTemplate(string customerName, string productName) returns string {
     string emailTemplate = "<h2> Hi " + customerName + " </h2>";
     emailTemplate = emailTemplate + "<h3> Thank you for downloading the product " + productName + " ! </h3>";
     emailTemplate = emailTemplate + "<p> If you still have questions regarding " + productName +
@@ -130,6 +137,7 @@ function getCustomEmailTemplate(string customerName, string productName) returns
 }
 
 # Send email with the given message body to the specified recipient for dowloading the specified product.
+#
 # + customerEmail - Recipient's email address.
 # + subject - Subject of the email.
 # + messageBody - Email message body to send.
@@ -147,16 +155,13 @@ function sendMail(string customerEmail, string subject, string messageBody) retu
     var sendMessageResponse = gmailClient->sendMessage(userId, untaint messageRequest);
     string messageId;
     string threadId;
-    match sendMessageResponse {
-        (string, string) sendStatus => {
-            (messageId, threadId) = sendStatus;
-            log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId + " and thread Id:"
-                    + threadId);
-            return true;
-        }
-        gmail:GmailError e => {
-            log:printInfo(e.message);
-            return false;
-        }
+    if (sendMessageResponse is (string, string)) {
+        (messageId, threadId) = sendMessageResponse;
+        log:printInfo("Sent email to " + customerEmail + " with message Id: " + messageId +
+            " and thread Id:" + threadId);
+        return true;
+    } else {
+        log:printInfo(<string>sendMessageResponse.detail().message);
+        return false;
     }
 }

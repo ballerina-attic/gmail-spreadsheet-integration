@@ -72,16 +72,16 @@ gmail:Client gmailClient = new({
 
 # Main function to run the integration system.
 public function main() {
-    log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers");
+    log:printDebug("GMail-Spreadsheet Integration -> Sending notification to customers");
     boolean result = sendNotification();
     if (result) {
-        log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers successfully completed!");
+        log:printDebug("GMail-Spreadsheet Integration -> Sending notification to customers successfully completed!");
     } else {
-        log:printDebug("Gmail-Spreadsheet Integration -> Sending notification to customers failed!");
+        log:printDebug("GMail-Spreadsheet Integration -> Sending notification to customers failed!");
     }
 }
 
-# Send notification to the customers.
+# Returns an indication of the status of the sending notification to the customers.
 #
 # + return - State of whether the process of sending notification is success or not
 function sendNotification() returns boolean {
@@ -136,7 +136,8 @@ function getCustomEmailTemplate(string customerName, string productName) returns
     return emailTemplate;
 }
 
-# Send email with the given message body to the specified recipient for dowloading the specified product.
+# Send email with the given message body to the specified recipient for dowloading the specified product and return the
+# indication of sending is succss or not.
 #
 # + customerEmail - Recipient's email address.
 # + subject - Subject of the email.

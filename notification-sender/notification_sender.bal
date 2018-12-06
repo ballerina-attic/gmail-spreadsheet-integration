@@ -94,7 +94,7 @@ function sendNotification() returns boolean {
         int i = 0;
         boolean isSuccess = false;
         //Iterate through each customer details and send customized email.
-        foreach value in customerDetails {
+        foreach var value in customerDetails {
             //Skip the first row as it contains header values.
             if (i > 0) {
                 string productName = value[0];
@@ -145,7 +145,7 @@ function getCustomEmailTemplate(string customerName, string productName) returns
 # + return - The status of sending email success or not
 function sendMail(string customerEmail, string subject, string messageBody) returns boolean {
     //Create html message
-    gmail:MessageRequest messageRequest;
+    gmail:MessageRequest messageRequest = {};
     messageRequest.recipient = customerEmail;
     messageRequest.sender = senderEmail;
     messageRequest.subject = subject;

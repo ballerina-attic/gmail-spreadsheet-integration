@@ -117,7 +117,7 @@ function sendNotification() returns boolean {
 # + return - Two dimensional string array of spreadsheet cell values.
 function getCustomerDetailsFromGSheet() returns string[][]|error {
     //Read all the values from the sheet.
-    string[][] values = check spreadsheetClient->getSheetValues(spreadsheetId, sheetName, "", "");
+    string[][] values = check spreadsheetClient->getSheetValues(spreadsheetId, sheetName);
     log:printInfo("Retrieved customer details from spreadsheet id: " + spreadsheetId + "; sheet name: "
             + sheetName);
     return values;

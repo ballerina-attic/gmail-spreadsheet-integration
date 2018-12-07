@@ -13,7 +13,7 @@ ballerina.conf
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# Module Files #
 *.jar
 *.war
 *.ear

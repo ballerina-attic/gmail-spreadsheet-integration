@@ -43,7 +43,7 @@ to simply add the name to the body of a html mail template and send the email to
 ## Prerequisites
  
 - [Ballerina Distribution](https://ballerinalang.org/docs/quick-tour/quick-tour/#install-ballerina) 
-- Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina) and [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina)
+- Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina) and [VSCode](https://marketplace.visualstudio.com/items?itemName=ballerina.ballerina)
 - Go through the following steps to obtain credetials and tokens for both Google Sheets and GMail APIs.
     1. Visit [Google API Console](https://console.developers.google.com), click **Create Project**, and follow the wizard 
     to create a new project.
@@ -82,9 +82,8 @@ to access both APIs.
 
 ### Optional Requirements
 - Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina), 
-    [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina), 
-    [Atom](https://atom.io/packages/language-ballerina))
-
+    [VSCode](https://marketplace.visualstudio.com/items?itemName=ballerina.ballerina))
+    
 ## Implementation
 
 ### Create the module structure

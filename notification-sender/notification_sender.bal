@@ -49,10 +49,18 @@ gsheets4:Client spreadsheetClient = new({
     clientConfig: {
         auth: {
             scheme: http:OAUTH2,
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-            clientId: clientId,
-            clientSecret: clientSecret
+            config: {
+                grantType: http:DIRECT_TOKEN,
+                config: {
+                    accessToken: accessToken,
+                    refreshConfig: {
+                        clientId: clientId,
+                        clientSecret: clientSecret,
+                        refreshUrl: gsheets4:REFRESH_URL,
+                        refreshToken: refreshToken
+                    }
+                }
+            }
         }
     }
 });
@@ -62,10 +70,18 @@ gmail:Client gmailClient = new({
     clientConfig: {
         auth: {
             scheme: http:OAUTH2,
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-            clientId: clientId,
-            clientSecret: clientSecret
+            config: {
+                grantType: http:DIRECT_TOKEN,
+                config: {
+                    accessToken: accessToken,
+                    refreshConfig: {
+                        refreshUrl: gmail:REFRESH_URL,
+                        refreshToken: refreshToken,
+                        clientId: clientId,
+                        clientSecret: clientSecret
+                    }
+                }
+            }
         }
     }
 });
